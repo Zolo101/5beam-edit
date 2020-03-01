@@ -1,5 +1,7 @@
 const levelwidth = 32;
 const levelheight = 18;
+//const WEBPAGE = ""; // for lcoal
+const WEBPAGE = "5beam-edit/"; // for web
 var gridsize = 25;
 var blocknodes = Create2DArray(levelwidth);
 var itemlist = [
@@ -83,14 +85,14 @@ interface Nodeinfo {
 
 function preload() {
     for (let i = 1; i < itemlist.length; i++) {
-        images[i] = loadImage("../5beam-edit/img/" + itemlist[i][1] + ".png");
+        images[i] = loadImage("../" + WEBPAGE + "/img/" + itemlist[i][1] + ".png");
     }
     for (let i = 0; i < deco.length; i++) {
         for (let j = 0; j < deco[i].length; j++) {
             if (deco[i][j] == undefined) {
                 return
             }
-            decoimg[i][j] = loadImage("../5beam-edit/img/deco/outline_" + deco[i][j] + ".png");
+            decoimg[i][j] = loadImage("../" + WEBPAGE + "/img/deco/outline_" + deco[i][j] + ".png");
         }
     }
 }
