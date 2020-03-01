@@ -70,14 +70,14 @@ var BlockNode = (function () {
 }());
 function preload() {
     for (var i = 1; i < itemlist.length; i++) {
-        images[i] = loadImage("../" + WEBPAGE + "/img/" + itemlist[i][1] + ".png");
+        images[i] = loadImage("../" + WEBPAGE + "img/" + itemlist[i][1] + ".png");
     }
     for (var i = 0; i < deco.length; i++) {
         for (var j = 0; j < deco[i].length; j++) {
             if (deco[i][j] == undefined) {
                 return;
             }
-            decoimg[i][j] = loadImage("../" + WEBPAGE + "/img/deco/outline_" + deco[i][j] + ".png");
+            decoimg[i][j] = loadImage("../" + WEBPAGE + "img/deco/outline_" + deco[i][j] + ".png");
         }
     }
 }
