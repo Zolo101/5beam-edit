@@ -10,6 +10,12 @@ var itemlist = [
     ["1", "1", "General"],
     ["4", "4", "General"],
     [":", "WT", "General"],
+    ["5", "5", "Deco"],
+    ["8", "8", "General"],
+    ["9", "9", "General"],
+    [";", ";", "General"],
+    ["<", "left", "General"],
+    [">", "right", "General"],
 ];
 var settings = false;
 var images = [];
@@ -49,10 +55,10 @@ var deco = [
 var decoimg = [[], [], [], [], [], []];
 var tool = null;
 var currentitem = itemlist[1][0];
-var toollist = [["L", "Line (WIP)"],
-    ["R", "Replace"],
+var toollist = [
     ["F", "Fill"],
-    ["B", "Brush",]];
+    ["B", "Brush",]
+];
 var startpoint;
 var toolbutton = [];
 var itembutton = [];
@@ -241,6 +247,9 @@ function itemiconbar() {
         ilb.mousePressed(function () { currentitem = itemlist[i][0]; });
         ilb.class("itemicon");
         ilb.parent(itemdiv);
+        if (i) {
+            ilb.style("background-image", "url(" + "../" + WEBPAGE + "img/" + itemlist[i][1] + ".png" + ")");
+        }
     };
     for (var i = 0; i < itemlist.length; i++) {
         _loop_2(i);

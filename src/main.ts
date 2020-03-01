@@ -15,6 +15,12 @@ var itemlist = [
     ["1","1","General"],
     ["4","4","General"],
     [":","WT","General"],
+    ["5","5","Deco"],
+    ["8","8","General"],
+    ["9","9","General"],
+    [";",";","General"],
+    ["<","left","General"],
+    [">","right","General"],
 ]
 var settings = false;
 var images = []
@@ -54,8 +60,7 @@ var deco = [
 var decoimg = [[],[],[],[],[],[]]
 var tool = null;
 var currentitem = itemlist[1][0];
-var toollist = [["L", "Line (WIP)"],
-                ["R", "Replace"],
+var toollist = [//["L", "Line (WIP)"],
                 ["F", "Fill"],
                 ["B", "Brush",]];
 // default time size (X,Y)
@@ -288,6 +293,9 @@ function itemiconbar() {
         ilb.mousePressed(function(){currentitem = itemlist[i][0]});
         ilb.class("itemicon");
         ilb.parent(itemdiv);
+        if (i) { // bruh moment
+            ilb.style("background-image","url(" + "../" + WEBPAGE + "img/" + itemlist[i][1] + ".png" +")")
+        }    
     }
 }
 
