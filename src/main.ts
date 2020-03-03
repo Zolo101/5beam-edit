@@ -1,7 +1,7 @@
 const levelwidth = 32;
 const levelheight = 18;
-const WEBPAGE = ""; // for lcoal
-//const WEBPAGE = "5beam-edit/"; // for web
+//const WEBPAGE = ""; // for lcoal
+const WEBPAGE = "5beam-edit/"; // for web
 var gridsize = 25;
 var blocknodes = Create2DArray(levelwidth);
 var itemlist = [

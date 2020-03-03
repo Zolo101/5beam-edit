@@ -1,6 +1,6 @@
 var levelwidth = 32;
 var levelheight = 18;
-var WEBPAGE = "";
+var WEBPAGE = "5beam-edit/";
 var gridsize = 25;
 var blocknodes = Create2DArray(levelwidth);
 var itemlist = [
