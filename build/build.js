@@ -1,10 +1,11 @@
 var levelwidth = 32;
 var levelheight = 18;
-var WEBPAGE = "5beam-edit/";
+const levelblocks = levelwidth * levelheight;
+const WEBPAGE = "5beam-edit/";
 var gridsize = 25;
 var blocknodes = Create2DArray(levelwidth);
 var itemlist = [
-    ["", "Air", "General"],
+    [".", "Air", "General"],
     ["/", "Slash", "General"],
     ["7", "7", "General"],
     ["1", "1", "General"],
@@ -17,6 +18,10 @@ var itemlist = [
     ["<", "left", "General"],
     [">", "right", "General"],
 ];
+var itemsusing = [];
+for (let i = 0; i < itemlist.length; i++) {
+    itemsusing[i] = itemlist[i][0];
+}
 var settings = false;
 var images = [];
 var deco = [
@@ -62,24 +67,23 @@ var toollist = [
 var startpoint;
 var toolbutton = [];
 var itembutton = [];
+var real_time_render = false;
 function Create2DArray(rows) {
     var arr = [];
-    for (var i = 0; i < rows; i++) {
+    for (let i = 0; i < rows; i++) {
         arr[i] = [];
     }
     return arr;
 }
-var BlockNode = (function () {
-    function BlockNode(ninfo) {
-    }
-    return BlockNode;
-}());
+class BlockNode {
+    constructor(ninfo) { }
+}
 function preload() {
-    for (var i = 1; i < itemlist.length; i++) {
+    for (let i = 1; i < itemlist.length; i++) {
         images[i] = loadImage("../" + WEBPAGE + "img/" + itemlist[i][1] + ".png");
     }
-    for (var i = 0; i < deco.length; i++) {
-        for (var j = 0; j < deco[i].length; j++) {
+    for (let i = 0; i < deco.length; i++) {
+        for (let j = 0; j < deco[i].length; j++) {
             if (deco[i][j] == undefined) {
                 return;
             }
@@ -94,10 +98,10 @@ function setup() {
     resizeCanvas(gridsize * levelwidth, gridsize * levelheight);
     tooliconbar();
     itemiconbar();
-    for (var i = 0; i < levelwidth; i++) {
-        for (var j = 0; j < levelheight; j++) {
+    for (let i = 0; i < levelwidth; i++) {
+        for (let j = 0; j < levelheight; j++) {
             blocknodes[i][j] = {
-                block: "",
+                block: ".",
                 x: i,
                 y: j
             };
@@ -149,7 +153,7 @@ function mouseClicked() {
             blocknodes[blockpoint[0]][blockpoint[1]].block = currentitem;
         }
     }
-    for (var i = 0; i < toolbutton.length; i++) {
+    for (let i = 0; i < toolbutton.length; i++) {
         if (toolbutton[i].isPressed) {
             tool = toollist[i];
         }
@@ -172,87 +176,86 @@ function infoText(textstring, color) {
     text(textstring, 5, (26 + windowWidth / 150) / 1.375);
 }
 function keyPressed() {
-    if (keyCode === 76) {
-        tool = ["L", "Line (WIP)"];
-    }
-    if (keyCode === 82) {
-        tool = ["R", "Replace"];
-    }
-    if (keyCode === 70) {
-        tool = ["F", "Fill"];
-    }
-    if (keyCode === 66) {
-        tool = ["B", "Brush"];
-    }
-    if (keyCode === 79) {
-        var level = "loadedLevels=\n";
-        level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01,00,L\n";
-        for (var i = 0; i < levelheight; i++) {
-            for (var j = 0; j < levelwidth; j++) {
-                if (blocknodes[j][i].block) {
-                    level += blocknodes[j][i].block;
+    switch (keyCode) {
+        case 76:
+            tool = ["L", "Line (WIP)"];
+            break;
+        case 82:
+            tool = ["R", "Replace"];
+            break;
+        case 70:
+            tool = ["F", "Fill"];
+            break;
+        case 66:
+            tool = ["B", "Brush"];
+            break;
+        case 79:
+            let level = "loadedLevels=\n";
+            level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01,00,L\n";
+            for (let i = 0; i < levelheight; i++) {
+                for (let j = 0; j < levelwidth; j++) {
+                    if (blocknodes[j][i].block) {
+                        level += blocknodes[j][i].block;
+                    }
+                    else {
+                        level += ".";
+                    }
                 }
-                else {
-                    level += ".";
-                }
+                level += "\n";
             }
-            level += "\n";
-        }
-        level += "01,02.00,15.00,10\n00\n000000\n";
-        console.log(level);
-    }
-    if (keyCode === 27) {
-        tool = null;
+            level += "01,02.00,15.00,10\n00\n000000\n";
+            console.log(level);
+            break;
+        case 27:
+            tool = null;
+            break;
     }
 }
 function updateGrid() {
-    for (var i = 0; i < levelwidth; i++) {
-        for (var j = 0; j < levelheight; j++) {
-            fill(128);
-            checkItem(i, j);
+    for (let i = 0; i < levelwidth; i++) {
+        for (let j = 0; j < levelheight; j++) {
+            let cool = itemsusing.findIndex(c => c === blocknodes[i][j].block);
+            if (cool == 0) {
+                rect(i * gridsize, startpoint + j * gridsize, gridsize, gridsize);
+            }
+            else {
+                displayBlock(images[cool], i, j);
+            }
         }
     }
 }
-function checkItem(i, j) {
-    for (var x = 1; x < itemlist.length; x++) {
-        if (blocknodes[i][j].block == itemlist[x][0]) {
-            image(images[x], i * gridsize, startpoint + j * gridsize, gridsize, gridsize);
-            return;
-        }
-        else {
-            rect(i * gridsize, startpoint + j * gridsize, gridsize, gridsize);
-        }
-    }
+function displayBlock(p5image, i, j) {
+    image(p5image, i * gridsize, startpoint + j * gridsize, gridsize, gridsize);
 }
 function tooliconbar() {
-    var tooldiv = createDiv();
+    let tooldiv = createDiv();
     tooldiv.id("tidiv");
-    var _loop_1 = function (i) {
-        var tlb = toolbutton[i];
+    for (let i = 0; i < toollist.length; i++) {
+        let tlb = toolbutton[i];
         tlb = createButton("[" + toollist[i][0] + "] " + toollist[i][1] + " Tool");
         tlb.mousePressed(function () { tool = toollist[i]; });
         tlb.class("toolicon");
         tlb.parent(tooldiv);
-    };
-    for (var i = 0; i < toollist.length; i++) {
-        _loop_1(i);
     }
 }
 function itemiconbar() {
-    var itemdiv = createDiv();
+    let itemdiv = createDiv();
     itemdiv.id("idiv");
-    var _loop_2 = function (i) {
-        var ilb = itembutton[i];
+    for (let i = 0; i < itemlist.length; i++) {
+        let ilb = itembutton[i];
         ilb = createButton("[" + itemlist[i][0] + "] " + itemlist[i][1]);
-        ilb.mousePressed(function () { currentitem = itemlist[i][0]; });
+        ilb.mousePressed(function () {
+            currentitem = itemlist[i][0];
+            if (!itemsusing.find(c => c === itemlist[i][0])) {
+                itemsusing.push(itemlist[i][0]);
+                console.log(itemsusing);
+            }
+        });
         ilb.class("itemicon");
         ilb.parent(itemdiv);
         if (i) {
             ilb.style("background-image", "url(" + "../" + WEBPAGE + "img/" + itemlist[i][1] + ".png" + ")");
         }
-    };
-    for (var i = 0; i < itemlist.length; i++) {
-        _loop_2(i);
     }
 }
 function checkTool(toolkey) {
@@ -261,7 +264,7 @@ function checkTool(toolkey) {
     }
 }
 function getClickBN() {
-    var smouseY = mouseY - startpoint;
+    let smouseY = mouseY - startpoint;
     if (Math.floor(mouseX / gridsize) >= levelwidth || Math.floor(smouseY / gridsize) < 0) {
         return null;
     }
@@ -271,9 +274,9 @@ function getClickBN() {
     return [Math.floor(mouseX / gridsize), Math.floor(smouseY / gridsize)];
 }
 function lineTool(item, sx1, sy1, sx2, sy2) {
-    var dx = sx2 - sx1;
-    var dy = sy2 - sy1;
-    var y = Math.max(sy1, sy2);
+    let dx = sx2 - sx1;
+    let dy = sy2 - sy1;
+    let y = Math.max(sy1, sy2);
     for (var x = sx1; x < sx2; x += 0.5) {
         y = sy1 + dy * (x - sy1) / dx;
         blocknodes[Math.round(x)][Math.round(y)].block = "Red";

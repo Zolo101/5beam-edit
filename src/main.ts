@@ -1,5 +1,6 @@
-const levelwidth = 32;
-const levelheight = 18;
+var levelwidth = 32;
+var levelheight = 18;
+const levelblocks = levelwidth*levelheight;
 //const WEBPAGE = ""; // for lcoal
 const WEBPAGE = "5beam-edit/"; // for web
 var gridsize = 25;
@@ -9,7 +10,7 @@ var itemlist = [
     // second arg = the picture name
     // third arg = category
     // fourth arg = rotation (optional)
-    ["","Air","General"],
+    [".","Air","General"],
     ["/","Slash","General"],
     ["7","7","General"],
     ["1","1","General"],
@@ -21,9 +22,13 @@ var itemlist = [
     [";",";","General"],
     ["<","left","General"],
     [">","right","General"],
-]
+];
+var itemsusing = [];
+for (let i = 0; i < itemlist.length; i++) {
+    itemsusing[i] = itemlist[i][0];
+}
 var settings = false;
-var images = []
+var images = [];
 var deco = [
     [
         "1sides0",
@@ -67,11 +72,18 @@ var toollist = [//["L", "Line (WIP)"],
 var startpoint: number;
 var toolbutton = [];
 var itembutton = [];
+var real_time_render = false;
+/*
 
+Only turn this on if you have a good pc
+
+*/
+
+//console.log(navigator.hardwareConcurrency);
 function Create2DArray(rows) {
     var arr = [];
   
-    for (var i=0;i<rows;i++) {
+    for (let i = 0; i < rows; i++) {
        arr[i] = [];
     }
   
@@ -95,7 +107,7 @@ function preload() {
     for (let i = 0; i < deco.length; i++) {
         for (let j = 0; j < deco[i].length; j++) {
             if (deco[i][j] == undefined) {
-                return
+                return;
             }
             decoimg[i][j] = loadImage("../" + WEBPAGE + "img/deco/outline_" + deco[i][j] + ".png");
         }
@@ -117,7 +129,7 @@ function setup() {
     for (let i = 0; i < levelwidth; i++) {
         for (let j = 0; j < levelheight; j++) {
             blocknodes[i][j] = {
-                block: "",
+                block: ".",
                 x: i,
                 y: j
             }
@@ -211,62 +223,134 @@ function infoText(textstring: string, color?: string) {
 }
 
 function keyPressed() {
-    if (keyCode === 76) {
-        tool = ["L","Line (WIP)"];
-    }
-    if (keyCode === 82) {
-        tool = ["R","Replace"];
-    }
-    if (keyCode === 70) {
-        tool = ["F","Fill"];
-    }
-    if (keyCode === 66) {
-        tool = ["B","Brush"];
-        //lineTool("red",4,5,8,10);
-    }
-    if (keyCode === 79) {
-        let level = "loadedLevels=\n";
-        level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01,00,L\n";
-        for (let i = 0; i < levelheight; i++) {
-            for (let j = 0; j < levelwidth; j++) {
-                //console.log(j);
-                if (blocknodes[j][i].block) {
-                    level += blocknodes[j][i].block;
-                } else {
-                    level += ".";
+    switch (keyCode) {
+        case 76:
+            tool = ["L","Line (WIP)"];
+            break;
+        case 82:
+            tool = ["R","Replace"];
+            break;
+        case 70:
+            tool = ["F","Fill"];
+            break;
+        case 66:
+            tool = ["B","Brush"];
+            //lineTool("red",4,5,8,10);
+            break;
+        case 79:
+            let level = "loadedLevels=\n";
+            level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01,00,L\n";
+            for (let i = 0; i < levelheight; i++) {
+                for (let j = 0; j < levelwidth; j++) {
+                    //console.log(j);
+                    if (blocknodes[j][i].block) {
+                        level += blocknodes[j][i].block;
+                    } else {
+                        level += ".";
+                    }
                 }
+                level += "\n";
             }
-            level += "\n";
-        }
-        level += "01,02.00,15.00,10\n00\n000000\n";
-        console.log(level);
-    }
-    if (keyCode === 27) {
-        tool = null;
+            level += "01,02.00,15.00,10\n00\n000000\n";
+            console.log(level);
+            break;
+        case 27:
+            tool = null;
+            break;
     }
 }
 
 function updateGrid() {
     for (let i = 0; i < levelwidth; i++) {
         for (let j = 0; j < levelheight; j++) {
-            fill(128);
-            checkItem(i,j);
+            //fill(255-(i+j)*4);
+            let cool = itemsusing.findIndex(c => c === blocknodes[i][j].block);
+            if (cool == 0) {
+                rect(i*gridsize,startpoint+j*gridsize,gridsize,gridsize);
+            } else {
+                displayBlock(images[cool],i,j);
+            }
+            //console.log(cool);
+            //console.log(blocknodes[i][j].block);
+            //let c = images[][]
+            //displayBlock(images[],i,j);
+            //checkItem(i,j);
         }   
     }
 }
 
-function checkItem(i,j) {
-    for (let x = 1; x < itemlist.length; x++) { 
+function displayBlock(p5image,i: number,j: number) {
+    image(p5image,i*gridsize,startpoint+j*gridsize,gridsize,gridsize);
+}
+
+/*function checkItem(i,j) {
+    for (let x = 1; x < itemsusing.length; x++) { 
         // for future optimization, only loop items that are put in the level
-        if (blocknodes[i][j].block == itemlist[x][0]) {
+
+        if (blocknodes[i][j].block == itemsusing[x][0]) {
             //fill("red"); //debug
-            image(images[x],i*gridsize,startpoint+j*gridsize,gridsize,gridsize);
-            return;
+            displayBlock(images[x][0],i,j);
+
+            if (real_time_render) {
+            let item = itemlist[x][0];
+            var collison = [0,0,
+                            0,0]; //LEFT, RIGHT, UP, DOWN
+
+            if (blocknodes[i-1][j].block == item) { // LEFT
+                collison[0] = 1;
+                //console.log("LEFT COL");
+            }
+
+            if (blocknodes[i+1][j].block == item) { // RIGHT
+                collison[1] = 1;
+                //console.log("RIGHT COL");
+            }
+
+            if (blocknodes[i][j+1].block == item) { // UP
+                collison[2] = 1;
+                //console.log("UP COL");
+            }
+
+            if (blocknodes[i][j-1].block == item) { // DOWN
+                collison[3] = 1;
+                //console.log("DOWN COL");
+            }
+            if (collison.find(c => c == 0) == undefined) {
+                //console.log(collison);
+                return;
+            } else if (collison.find(c => c === 1)) { // ???? why not just collison.find(number) dum js
+                if (collison[2] == 1) {
+                    if (collison[4] == 1) {
+                        displayBlock(decoimg[5][1],i,j);
+                    } else if (collison[1] == 1) {
+                        displayBlock(decoimg[1][0],i,j);
+                    } else if (false) {
+                        displayBlock(decoimg[2][2],i,j);
+                        image(decoimg[2][2],i*gridsize,startpoint+j*gridsize,gridsize,gridsize);
+                    } else if (collison[4] == 1) {
+                        displayBlock(decoimg[5][1],i,j);
+                    }
+                    /*if (collison[3] == 2) {
+
+                    } else {
+                        image(decoimg[2][0],i*gridsize,startpoint+j*gridsize,gridsize,gridsize);
+                    }
+                } else if (collison[3] == 1) {
+                    displayBlock(decoimg[2][0],i,j);
+                } else if (collison[0] == 1) {
+                    displayBlock(decoimg[2][3],i,j);
+                } else if (collison[1] == 1) {
+                    displayBlock(decoimg[2][1],i,j);
+                }
+            } else {
+                displayBlock(decoimg[3][0],i,j);
+            }
+            }
         } else {
             rect(i*gridsize,startpoint+j*gridsize,gridsize,gridsize);
         }
     }
-}
+}*/
 
 function tooliconbar() {
     let tooldiv = createDiv();
@@ -290,7 +374,13 @@ function itemiconbar() {
         let ilb = itembutton[i]
 
         ilb = createButton("[" + itemlist[i][0] + "] " + itemlist[i][1]);
-        ilb.mousePressed(function(){currentitem = itemlist[i][0]});
+        ilb.mousePressed(function(){ // ITEM ICON ONCLICK FUNCTION
+            currentitem = itemlist[i][0];
+            if (!itemsusing.find(c => c === itemlist[i][0])) {
+                itemsusing.push(itemlist[i][0]);
+                console.log(itemsusing);
+            }
+        });
         ilb.class("itemicon");
         ilb.parent(itemdiv);
         if (i) { // bruh moment

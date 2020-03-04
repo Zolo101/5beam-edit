@@ -41,4 +41,6 @@ button:hover {
     font-weight: bold;
     background-color: #74a765;
     background-size: cover;
+    width: 100px;
+    height: 80px;
 }
