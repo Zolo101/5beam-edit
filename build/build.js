@@ -228,7 +228,7 @@ function printLevel() {
             }
         }
     }
-    level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01," + pad2(entitys) + ",L\n";
+    level += "Your Created Level\n" + levelwidth + "," + levelheight + pad2(entitys) + ",01," + ",L\n";
     for (let i = 0; i < levelheight; i++) {
         for (let j = 0; j < levelwidth; j++) {
             if (blocknodes[j][i].block == "📘" || blocknodes[j][i].block == "🔥") {
@@ -244,7 +244,7 @@ function printLevel() {
         level += "\n";
     }
     level += bufferentity;
-    level += "\n00\n000000\n";
+    level += "00\n000000\n";
     console.log(level);
     if (!entitys) {
         console.warn("There are no entities in the level, are you sure you dont want to add any?");
