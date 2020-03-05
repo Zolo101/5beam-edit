@@ -140,7 +140,7 @@ function draw() {
 }
 function windowResized() {
     textSize(12 + windowWidth / 100);
-    resizeCanvas(gridsize * levelwidth, gridsize * levelheight);
+    resizeCanvas(gridsize * levelwidth, startpoint + gridsize * levelheight);
     draw();
     removeElements();
     tooliconbar();

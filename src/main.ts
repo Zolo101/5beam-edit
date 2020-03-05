@@ -181,7 +181,7 @@ function draw() {
 function windowResized() {
     textSize(12+windowWidth/100);
     //gridsize = Math.floor(windowWidth/Math.max(levelwidth,levelheight));
-    resizeCanvas(gridsize*levelwidth,gridsize*levelheight);
+    resizeCanvas(gridsize*levelwidth,startpoint+gridsize*levelheight);
     draw(); 
     removeElements();
     //entityiconbar();
