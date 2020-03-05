@@ -22,6 +22,8 @@ var itemlist = [
     [";",";","General"],
     ["<","left","General"],
     [">","right","General"],
+    ["📘","Book","Entity"],
+    ["🔥","Match","Entity"],
 ];
 var itemsusing = [];
 for (let i = 0; i < itemlist.length; i++) {
@@ -62,12 +64,17 @@ var deco = [
         "line2"
     ]
 ]
-var decoimg = [[],[],[],[],[],[]]
+var decoimg = [[],[],[],[],[],[]];
 var tool = null;
 var currentitem = itemlist[1][0];
+
 var toollist = [//["L", "Line (WIP)"],
                 ["F", "Fill"],
                 ["B", "Brush",]];
+
+var entitylist = [["Book","01","char"],
+                  ["Match","04","char"]];
+var currententitys = [];
 // default time size (X,Y)
 var startpoint: number;
 var toolbutton = [];
@@ -88,6 +95,10 @@ function Create2DArray(rows) {
     }
   
     return arr;
+}
+
+function pad2(number) {
+    return (number < 10 ? '0' : '') + number
 }
 
 class BlockNode {
@@ -123,7 +134,8 @@ function setup() {
     textSize(12+windowWidth/100);
     //gridsize = Math.floor(windowWidth/Math.max(levelwidth,levelheight));
     //gridsize = 25;
-    resizeCanvas(gridsize*levelwidth,gridsize*levelheight);
+    resizeCanvas(gridsize*levelwidth,startpoint+gridsize*levelheight);
+    //entityiconbar();
     tooliconbar();
     itemiconbar();
     for (let i = 0; i < levelwidth; i++) {
@@ -172,6 +184,7 @@ function windowResized() {
     resizeCanvas(gridsize*levelwidth,gridsize*levelheight);
     draw(); 
     removeElements();
+    //entityiconbar();
     tooliconbar();
     itemiconbar();
 }
@@ -181,6 +194,7 @@ function mouseClicked() {
     if (blockpoint != null) { // make sure cursor is on the grid
         // todo: optimize tool thingy
         if (checkTool("F")) {
+            //console.log(blocknodes[blockpoint[0]][blockpoint[1]].block);
             fillTool(currentitem,blockpoint[0],blockpoint[1],blocknodes[blockpoint[0]][blockpoint[1]].block);
             return;
         }
@@ -208,6 +222,7 @@ function mouseDragged() {
     //if (keyCode === 16) {
     //    
     //}
+    //console.log(getClickBN());
 }
 
 function infoText(textstring: string, color?: string) {
@@ -238,25 +253,63 @@ function keyPressed() {
             //lineTool("red",4,5,8,10);
             break;
         case 79:
-            let level = "loadedLevels=\n";
-            level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01,00,L\n";
-            for (let i = 0; i < levelheight; i++) {
-                for (let j = 0; j < levelwidth; j++) {
-                    //console.log(j);
-                    if (blocknodes[j][i].block) {
-                        level += blocknodes[j][i].block;
-                    } else {
-                        level += ".";
-                    }
-                }
-                level += "\n";
-            }
-            level += "01,02.00,15.00,10\n00\n000000\n";
-            console.log(level);
+            printLevel();
             break;
+        case 190:
+            currentitem = itemlist[0][0];
+            break;
+        case 68:
+            currententitys = [];
         case 27:
             tool = null;
             break;
+    }
+}
+
+function printLevel() {
+    let level = "loadedLevels=\n";
+    let entitys = 0;
+    // FIRST PASS == ENTITY
+    let bufferentity  = "";
+    for (let i = 0; i < levelheight; i++) {
+        for (let j = 0; j < levelwidth; j++) {
+            //console.log(j);
+            if (blocknodes[j][i].block == "📘" || blocknodes[j][i].block == "🔥") {
+                entitys++;
+                if (blocknodes[j][i].block == "📘") {
+                    bufferentity += "01," + pad2(j) + ".00," + pad2(i) + ".00,10";
+                }
+                if (blocknodes[j][i].block == "🔥") {
+                    bufferentity += "03," + pad2(j) + ".00," + pad2(i) + ".00,10";
+                }
+                bufferentity += "\n";
+            }
+        }
+    }
+    level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01," + pad2(entitys) + ",L\n";
+    // SECOND PASS == BLOCKS
+    for (let i = 0; i < levelheight; i++) { 
+        for (let j = 0; j < levelwidth; j++) {
+            //console.log(j);
+            if (blocknodes[j][i].block == "📘" || blocknodes[j][i].block == "🔥") {
+                level += ".";
+            } else if (blocknodes[j][i].block) {
+                level += blocknodes[j][i].block;
+            } else {
+                level += ".";
+            }
+        }
+        level += "\n";
+    }
+
+    level += bufferentity;
+    level += "\n00\n000000\n";
+    console.log(level);
+    if (!entitys) {
+        console.warn("There are no entities in the level, are you sure you dont want to add any?")
+    }
+    if (entitys > 99) {
+        console.warn("99 is the most entites you can have in a 5b level.")
     }
 }
 
@@ -270,6 +323,14 @@ function updateGrid() {
             } else {
                 displayBlock(images[cool],i,j);
             }
+
+            //for (let x = 0; x < currententitys.length; x++) {
+            //    let ent1 = currententitys[x][1].findIndex(c => c === i);
+            //    let ent2 = currententitys[x][2].findIndex(c => c === j);
+            //    if (ent1) {
+            //        displayBlock()
+            //    }
+            //}
             //console.log(cool);
             //console.log(blocknodes[i][j].block);
             //let c = images[][]
@@ -367,25 +428,56 @@ function tooliconbar() {
     }
 }
 
+/*function entityiconbar() {
+    let entitydiv = createDiv();
+    entitydiv.id("eidiv")
+    for (let i = 0; i < entitylist.length; i++) {
+        let elb = toolbutton[i];
+        elb = createButton(entitylist[i][0]);
+        //tlb.position(0,gridsize*levelheight+(i*21));
+        elb.mousePressed(function(){
+            //let coords = getClickBN();
+            //console.log(coords);
+            //console.log(getClickBN());
+            let coords = [];
+            coords[0] = prompt("Please enter the X coord where you want to place the entity (LEFT IS 0, RIGHT IS 32) (temporary)");
+            coords[1] = prompt("Please enter the Y coord where you want to place the entity (TOP IS 0, BOTTOM IS 18) (temporary)");
+            
+            currententitys.push([
+                "0" + str(i),coords[0] + ".00",coords[1] + ".00", "10" 
+            ]);
+            console.log(currententitys);
+        });
+        elb.class("entityicon");
+        elb.parent(entitydiv);
+        elb.style("background-image","url(" + "../" + WEBPAGE + "img/entity/" + entitylist[i][0] + ".png" +")")
+        //tlb.style("float","right");
+        //tlb.style("position","relative");
+    }
+}*/
+
 function itemiconbar() {
     let itemdiv = createDiv();
     itemdiv.id("idiv")
     for (let i = 0; i < itemlist.length; i++) {
-        let ilb = itembutton[i]
+        let ilb = itembutton[i];
 
         ilb = createButton("[" + itemlist[i][0] + "] " + itemlist[i][1]);
         ilb.mousePressed(function(){ // ITEM ICON ONCLICK FUNCTION
             currentitem = itemlist[i][0];
-            if (!itemsusing.find(c => c === itemlist[i][0])) {
-                itemsusing.push(itemlist[i][0]);
-                console.log(itemsusing);
-            }
+            //if (!itemsusing.find(c => c === itemlist[i][0])) {
+            //    itemsusing.push(itemlist[i][0]);
+            //    console.log(itemsusing);
+            //}
         });
         ilb.class("itemicon");
         ilb.parent(itemdiv);
         if (i) { // bruh moment
             ilb.style("background-image","url(" + "../" + WEBPAGE + "img/" + itemlist[i][1] + ".png" +")")
         }    
+        if (itemlist[i][2] == "Entity") {
+            ilb.style("background-color","#a78b65");
+        }
     }
 }
 
@@ -428,15 +520,15 @@ function fillTool(item: string, startx: number, starty: number, fillon: string) 
     if (startx < 0 || starty < 0) {
         return; // doesn't exist
     }
-    if (blocknodes[startx][starty].block == item) {
+    if (blocknodes[startx][starty].block === item) {
         return; // no need to fill, its already the item we want
     }
-    if (blocknodes[startx][starty].block != fillon) {
+    if (blocknodes[startx][starty].block !== fillon) {
         return; // not that we are filling on
     }
     //console.log(blocknodes[startx][starty]);
     blocknodes[startx][starty].block = item;
-
+    
     fillTool(item,startx+1,starty,fillon);
     fillTool(item,startx-1,starty,fillon);
     fillTool(item,startx,starty+1,fillon);

@@ -17,6 +17,8 @@ var itemlist = [
     [";", ";", "General"],
     ["<", "left", "General"],
     [">", "right", "General"],
+    ["📘", "Book", "Entity"],
+    ["🔥", "Match", "Entity"],
 ];
 var itemsusing = [];
 for (let i = 0; i < itemlist.length; i++) {
@@ -64,6 +66,9 @@ var toollist = [
     ["F", "Fill"],
     ["B", "Brush",]
 ];
+var entitylist = [["Book", "01", "char"],
+    ["Match", "04", "char"]];
+var currententitys = [];
 var startpoint;
 var toolbutton = [];
 var itembutton = [];
@@ -74,6 +79,9 @@ function Create2DArray(rows) {
         arr[i] = [];
     }
     return arr;
+}
+function pad2(number) {
+    return (number < 10 ? '0' : '') + number;
 }
 class BlockNode {
     constructor(ninfo) { }
@@ -95,7 +103,7 @@ function setup() {
     startpoint = 50;
     frameRate(24);
     textSize(12 + windowWidth / 100);
-    resizeCanvas(gridsize * levelwidth, gridsize * levelheight);
+    resizeCanvas(gridsize * levelwidth, startpoint + gridsize * levelheight);
     tooliconbar();
     itemiconbar();
     for (let i = 0; i < levelwidth; i++) {
@@ -190,25 +198,59 @@ function keyPressed() {
             tool = ["B", "Brush"];
             break;
         case 79:
-            let level = "loadedLevels=\n";
-            level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01,00,L\n";
-            for (let i = 0; i < levelheight; i++) {
-                for (let j = 0; j < levelwidth; j++) {
-                    if (blocknodes[j][i].block) {
-                        level += blocknodes[j][i].block;
-                    }
-                    else {
-                        level += ".";
-                    }
-                }
-                level += "\n";
-            }
-            level += "01,02.00,15.00,10\n00\n000000\n";
-            console.log(level);
+            printLevel();
             break;
+        case 190:
+            currentitem = itemlist[0][0];
+            break;
+        case 68:
+            currententitys = [];
         case 27:
             tool = null;
             break;
+    }
+}
+function printLevel() {
+    let level = "loadedLevels=\n";
+    let entitys = 0;
+    let bufferentity = "";
+    for (let i = 0; i < levelheight; i++) {
+        for (let j = 0; j < levelwidth; j++) {
+            if (blocknodes[j][i].block == "📘" || blocknodes[j][i].block == "🔥") {
+                entitys++;
+                if (blocknodes[j][i].block == "📘") {
+                    bufferentity += "01," + pad2(j) + ".00," + pad2(i) + ".00,10";
+                }
+                if (blocknodes[j][i].block == "🔥") {
+                    bufferentity += "03," + pad2(j) + ".00," + pad2(i) + ".00,10";
+                }
+                bufferentity += "\n";
+            }
+        }
+    }
+    level += "Your Created Level\n" + levelwidth + "," + levelheight + ",01," + pad2(entitys) + ",L\n";
+    for (let i = 0; i < levelheight; i++) {
+        for (let j = 0; j < levelwidth; j++) {
+            if (blocknodes[j][i].block == "📘" || blocknodes[j][i].block == "🔥") {
+                level += ".";
+            }
+            else if (blocknodes[j][i].block) {
+                level += blocknodes[j][i].block;
+            }
+            else {
+                level += ".";
+            }
+        }
+        level += "\n";
+    }
+    level += bufferentity;
+    level += "\n00\n000000\n";
+    console.log(level);
+    if (!entitys) {
+        console.warn("There are no entities in the level, are you sure you dont want to add any?");
+    }
+    if (entitys > 99) {
+        console.warn("99 is the most entites you can have in a 5b level.");
     }
 }
 function updateGrid() {
@@ -246,15 +288,14 @@ function itemiconbar() {
         ilb = createButton("[" + itemlist[i][0] + "] " + itemlist[i][1]);
         ilb.mousePressed(function () {
             currentitem = itemlist[i][0];
-            if (!itemsusing.find(c => c === itemlist[i][0])) {
-                itemsusing.push(itemlist[i][0]);
-                console.log(itemsusing);
-            }
         });
         ilb.class("itemicon");
         ilb.parent(itemdiv);
         if (i) {
             ilb.style("background-image", "url(" + "../" + WEBPAGE + "img/" + itemlist[i][1] + ".png" + ")");
+        }
+        if (itemlist[i][2] == "Entity") {
+            ilb.style("background-color", "#a78b65");
         }
     }
 }
@@ -290,10 +331,10 @@ function fillTool(item, startx, starty, fillon) {
     if (startx < 0 || starty < 0) {
         return;
     }
-    if (blocknodes[startx][starty].block == item) {
+    if (blocknodes[startx][starty].block === item) {
         return;
     }
-    if (blocknodes[startx][starty].block != fillon) {
+    if (blocknodes[startx][starty].block !== fillon) {
         return;
     }
     blocknodes[startx][starty].block = item;
