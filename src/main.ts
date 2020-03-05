@@ -1,7 +1,7 @@
 var levelwidth = 32;
 var levelheight = 18;
 const levelblocks = levelwidth*levelheight;
-//const WEBPAGE = ""; // for lcoal
+//const WEBPAGE = ""; // for local
 const WEBPAGE = "5beam-edit/"; // for web
 var gridsize = 25;
 var blocknodes = Create2DArray(levelwidth);
