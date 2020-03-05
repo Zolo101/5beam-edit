@@ -286,7 +286,7 @@ function printLevel() {
             }
         }
     }
-    level += "Your Created Level\n" + levelwidth + "," + levelheight + pad2(entitys) + ",01," + ",L\n";
+    level += "Your Created Level\n" + levelwidth + "," + levelheight + "," + pad2(entitys) + ",01," + "L\n";
     // SECOND PASS == BLOCKS
     for (let i = 0; i < levelheight; i++) { 
         for (let j = 0; j < levelwidth; j++) {
